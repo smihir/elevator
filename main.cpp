@@ -2,6 +2,7 @@
 #include <fstream>
 #include <pthread.h>
 #include <sstream>
+#include <unistd.h>
 #include "elevator.h"
 #include "scheduler.h"
 #include "log.h"

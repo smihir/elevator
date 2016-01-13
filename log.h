@@ -2,6 +2,8 @@
 #define ELEVATOR_LOG_H
 
 #include <pthread.h>
+#include <stdarg.h>
+
 extern pthread_mutex_t log_lock;
 static inline void eprintf(const char *fmt, ...) {
         pthread_mutex_lock(&log_lock);
