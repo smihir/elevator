@@ -30,6 +30,8 @@ private:
     pthread_mutex_t elevator_mutex;
 
     int id;
+    int quit;
+
     state elevator_state;
 
     int current_floor;
@@ -48,9 +50,12 @@ private:
 public:
 
     Elevator(int idnum);
+    bool do_queue_pending_request(int floor, displacement d);
     bool queue_pending_request(int floor, displacement d);
+    bool do_pending_request();
     int get_current_floor();
     displacement get_displacement();
+    void do_quit();
     static void *elevator_run(void *arg);
 };
 

@@ -5,6 +5,7 @@
 
 Elevator::Elevator(int idnum) {
     id = idnum;
+    quit = 0;
 
     current_floor = 1;
     requested_floor = 1;
@@ -18,18 +19,26 @@ Elevator::Elevator(int idnum) {
     pthread_create(&elevator_thread, NULL, elevator_run, this);
 }
 
+void Elevator::do_quit() {
+    quit = 1;
+    pthread_cond_signal(&elevator_wait);
+    pthread_join(elevator_thread, NULL);
+}
+
 void *Elevator::elevator_run(void *arg) {
     Elevator *me = static_cast<Elevator *>(arg);
 
     if (me == NULL)
         return NULL;
 
-    while (1) {
+    while (me->quit == 0) {
         pthread_mutex_lock(&me->elevator_mutex);
         me->elevator_state = READY;
         while (me->schedule_next_request() == false) {
             eprintf("%s:%s Waiting...\n", __func__, __FILE__);
             pthread_cond_wait(&me->elevator_wait, &me->elevator_mutex);
+            if (me->quit == 1)
+                return NULL;
             eprintf("%s:%s Scheduer kicking in...\n", __func__, __FILE__);
         }
         me->elevator_state = RUNNING;
@@ -61,7 +70,7 @@ bool Elevator::queue_next_request(int floor) {
     return true;
 }
 
-bool Elevator::queue_pending_request(int floor, displacement d) {
+bool Elevator::do_queue_pending_request(int floor, displacement d) {
     pthread_mutex_lock(&elevator_mutex);
 
     requests.push_back(make_pair(floor, d));
@@ -71,6 +80,27 @@ bool Elevator::queue_pending_request(int floor, displacement d) {
 
     pthread_mutex_unlock(&elevator_mutex);
 
+    return true;
+}
+
+bool Elevator::queue_pending_request(int floor, displacement d) {
+    pthread_mutex_lock(&elevator_mutex);
+
+    requests.push_back(make_pair(floor, d));
+    eprintf("%s:%s queue request floor:%d direction:%d sz %lu\n",
+            __func__, __FILE__, floor, d, requests.size());
+    pthread_mutex_unlock(&elevator_mutex);
+
+    return true;
+}
+
+bool Elevator::do_pending_request() {
+    pthread_mutex_lock(&elevator_mutex);
+    
+    pthread_cond_signal(&elevator_wait);
+    
+    pthread_mutex_unlock(&elevator_mutex);
+    
     return true;
 }
 
