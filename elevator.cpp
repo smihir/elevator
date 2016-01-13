@@ -94,9 +94,9 @@ bool Elevator::schedule_next_request() {
 
     if (direction_arrived == UP) {
         int same_d_floor = MAX_FLOORS + 1, same_d_min_index;
-        int opp_d_floor = MAX_FLOORS + 1, opp_d_min_index;
+        int opp_d_floor = -1, opp_d_max_index;
 
-        int same_d_low_floor = -1, same_d_low_max_index;
+        int same_d_low_floor = MAX_FLOORS + 1, same_d_low_min_index;
         int opp_d_low_floor = -1, opp_d_low_max_index;
 
         pair<int, displacement> p;
@@ -108,16 +108,16 @@ bool Elevator::schedule_next_request() {
                     same_d_floor = min(same_d_floor, p.first);
                     same_d_min_index = i;
                 } else {
-                    opp_d_floor = min(opp_d_floor, p.first);
-                    opp_d_min_index = i;
+                    opp_d_floor = max(opp_d_floor, p.first);
+                    opp_d_max_index = i;
                 }
             } else {
                 if (p.second != direction_arrived) {
                     opp_d_low_floor = max(opp_d_low_floor, p.first);
                     opp_d_low_max_index = i;
                 } else {
-                    same_d_low_floor = max(same_d_low_floor, p.first);
-                    same_d_low_max_index = i;
+                    same_d_low_floor = min(same_d_low_floor, p.first);
+                    same_d_low_min_index = i;
                 }
             }
         }
@@ -131,10 +131,10 @@ bool Elevator::schedule_next_request() {
         }
 
         if (opp_d_floor != MAX_FLOORS + 1) {
-            queue_next_request(requests[opp_d_min_index].first);
+            queue_next_request(requests[opp_d_max_index].first);
             eprintf("%s:%s q size %d, next floor %d\n",
                 __func__, __FILE__, size, requests[0].first);
-            requests.erase(requests.begin() + opp_d_min_index);
+            requests.erase(requests.begin() + opp_d_max_index);
             return true;
         }
 
@@ -147,19 +147,19 @@ bool Elevator::schedule_next_request() {
         }
 
         if (same_d_low_floor != - 1) {
-            queue_next_request(requests[same_d_low_max_index].first);
+            queue_next_request(requests[same_d_low_min_index].first);
             eprintf("%s:%s q size %d, next floor %d\n",
                 __func__, __FILE__, size, requests[0].first);
-            requests.erase(requests.begin() + same_d_low_max_index);
+            requests.erase(requests.begin() + same_d_low_min_index);
             return true;
         }
 
     } else {
         int same_d_floor = -1, same_d_max_index;
-        int opp_d_floor = -1, opp_d_max_index;
+        int opp_d_floor = MAX_FLOORS + 1, opp_d_min_index;
 
         int same_d_high_floor = MAX_FLOORS + 1, same_d_high_min_index;
-        int opp_d_high_floor = MAX_FLOORS + 1, opp_d_high_min_index;
+        int opp_d_high_floor = -1, opp_d_high_max_index;
 
         pair<int, displacement> p;
 
@@ -170,15 +170,15 @@ bool Elevator::schedule_next_request() {
                     same_d_floor = max(same_d_floor, p.first);
                     same_d_max_index = i;
                 } else {
-                    opp_d_floor = max(opp_d_floor, p.first);
-                    opp_d_max_index = i;
+                    opp_d_floor = min(opp_d_floor, p.first);
+                    opp_d_min_index = i;
                 }
             } else {
                 if (p.second != direction_arrived) {
                     opp_d_high_floor = min(opp_d_high_floor, p.first);
-                    opp_d_high_min_index = i;
+                    opp_d_high_max_index = i;
                 } else {
-                    same_d_high_floor = min(same_d_high_floor, p.first);
+                    same_d_high_floor = max(same_d_high_floor, p.first);
                     same_d_high_min_index = i;
                 }
             }
@@ -193,18 +193,18 @@ bool Elevator::schedule_next_request() {
         }
 
         if (opp_d_floor != -1) {
-            queue_next_request(requests[opp_d_max_index].first);
+            queue_next_request(requests[opp_d_min_index].first);
             eprintf("%s:%s q size %d, next floor %d\n",
                 __func__, __FILE__, size, requests[0].first);
-            requests.erase(requests.begin() + opp_d_max_index);
+            requests.erase(requests.begin() + opp_d_min_index);
             return true;
         }
 
         if (opp_d_high_floor != MAX_FLOORS + 1) {
-            queue_next_request(requests[opp_d_high_min_index].first);
+            queue_next_request(requests[opp_d_high_max_index].first);
             eprintf("%s:%s q size %d, next floor %d\n",
                 __func__, __FILE__, size, requests[0].first);
-            requests.erase(requests.begin() + opp_d_high_min_index);
+            requests.erase(requests.begin() + opp_d_high_max_index);
             return true;
         }
 
