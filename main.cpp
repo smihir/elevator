@@ -55,11 +55,9 @@ int main(int argc, char **argv) {
             displacement d;
             while (getline(tfile, line)) {
                 istringstream iss(line);
-                if (dir == 0)
-                    d = DOWN;
-                else
-                    d = UP;
                 iss >> floor;
+                iss >> dir;
+                d = (dir == 0) ? DOWN : UP;
                 cout << "floor: " << floor << " dir: " << dir << endl;
                 elevator.queue_pending_request(floor, d);
             }

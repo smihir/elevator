@@ -19,8 +19,8 @@ enum state {
 };
 
 enum displacement {
-    DOWN,
-    UP,
+    DOWN = 0,
+    UP = 1,
 };
 
 class Elevator {
