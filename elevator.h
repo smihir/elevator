@@ -2,6 +2,15 @@
 #define ELEVATOR_ELEVATOR_H
 
 #include <pthread.h>
+#include <vector>
+#include <utility>
+#include <iostream>
+#include <fstream>
+
+using namespace std;
+
+#define MAX_FLOORS 15
+#define MAX_BUFF 150
 
 enum state {
     INITIALIZING,
@@ -10,8 +19,8 @@ enum state {
 };
 
 enum displacement {
-    UP,
     DOWN,
+    UP,
 };
 
 class Elevator {
@@ -28,12 +37,18 @@ private:
 
     int requested_floor;
     int next_floor;
+    vector< pair<int, displacement> > requests;
+
+    ofstream logf;
 
     void process_request();
+    bool queue_next_request(int floor);
+    bool schedule_next_request();
+
 public:
 
     Elevator(int idnum);
-    bool queue_request(int floor);
+    bool queue_pending_request(int floor, displacement d);
     int get_current_floor();
     displacement get_displacement();
     static void *elevator_run(void *arg);
