@@ -11,24 +11,24 @@ using namespace std;
 
 #define NUM_ELEVATORS 1
 
-pthread_mutex_t log_lock;
+pthread_mutex_t Log::log_lock;
 
 void run(Elevator& e) {
     while (1) {
         int floor = 0, dir = -1;
         displacement d;
 
-        eprintf("\nEnter Floor number from 1-15: ");
+        Log::eprintf("\nEnter Floor number from 1-15: ");
         cin >> floor;
         if (floor < 1 || floor > MAX_FLOORS) {
-            eprintf("floor out of range\n");
+            Log::eprintf("floor out of range\n");
             continue;
         }
 
-        eprintf("Up(1) or Down(0): ");
+        Log::eprintf("Up(1) or Down(0): ");
         cin >> dir;
         if (dir != 0 && dir != 1) {
-            eprintf("\ninvalid direction\n");
+            Log::eprintf("\ninvalid direction\n");
             continue;
         }
         if (dir == 1)
@@ -43,7 +43,7 @@ void run(Elevator& e) {
 int main(int argc, char **argv) {
 
     Elevator elevator(1);
-    pthread_mutex_init(&log_lock, NULL);
+    pthread_mutex_init(&Log::log_lock, NULL);
 
     if (argc == 2) {
         ifstream tfile;

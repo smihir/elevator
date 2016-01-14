@@ -4,8 +4,10 @@
 #include <pthread.h>
 #include <stdarg.h>
 
-extern pthread_mutex_t log_lock;
-static inline void eprintf(const char *fmt, ...) {
+class Log {
+public:
+    static pthread_mutex_t log_lock;
+    static inline void eprintf(const char *fmt, ...) {
         pthread_mutex_lock(&log_lock);
 
         char logbuff[MAX_BUFF];
@@ -15,5 +17,6 @@ static inline void eprintf(const char *fmt, ...) {
         cout << logbuff;
 
         pthread_mutex_unlock(&log_lock);
+    }
 };
 #endif
