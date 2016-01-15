@@ -31,6 +31,7 @@ private:
 
     int id;
     int quit;
+    int step;
 
     state elevator_state;
 
@@ -46,6 +47,7 @@ private:
     void process_request();
     bool queue_next_request(int floor);
     bool schedule_next_request();
+    void eprintf(const char *fmt, ...);
 
 public:
 
@@ -56,7 +58,10 @@ public:
     bool do_pending_request();
     int get_current_floor();
     displacement get_displacement();
+    state get_state();
+    void get_full_state(int& floor, displacement& dir, state& st);
     void do_quit();
+    void do_step();
 };
 
 #endif

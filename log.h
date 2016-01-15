@@ -3,6 +3,7 @@
 
 #include <pthread.h>
 #include <stdarg.h>
+#include <stdio.h>
 
 class Log {
 public:
@@ -10,11 +11,12 @@ public:
     static inline void eprintf(const char *fmt, ...) {
         pthread_mutex_lock(&log_lock);
 
-        char logbuff[MAX_BUFF];
+        char logbuff[MAX_BUFF] = {'\0'};
         va_list args;
         va_start(args, fmt);
         vsprintf(logbuff, fmt, args);
-        cout << logbuff;
+        //cout << logbuff << flush;
+        printf("%s", logbuff);
 
         pthread_mutex_unlock(&log_lock);
     }

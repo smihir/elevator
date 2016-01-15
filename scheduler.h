@@ -3,6 +3,6 @@
 
 #include "elevator.h"
 
-void schedule_job(Elevator& e, int floor, displacement direction);
+void schedule_job(vector<Elevator *>& e, int floor, displacement direction);
 
 #endif
