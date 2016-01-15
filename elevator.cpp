@@ -1,4 +1,5 @@
 #include <iostream>
+#include <unistd.h>
 #include "elevator.h"
 #include "log.h"
 
