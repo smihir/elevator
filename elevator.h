@@ -43,6 +43,7 @@ private:
 
     ofstream logf;
 
+    static void *elevator_run(void *arg);
     void process_request();
     bool queue_next_request(int floor);
     bool schedule_next_request();
@@ -50,13 +51,13 @@ private:
 public:
 
     Elevator(int idnum);
+    ~Elevator();
     bool do_queue_pending_request(int floor, displacement d);
     bool queue_pending_request(int floor, displacement d);
     bool do_pending_request();
     int get_current_floor();
     displacement get_displacement();
     void do_quit();
-    static void *elevator_run(void *arg);
 };
 
 #endif

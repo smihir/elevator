@@ -19,6 +19,11 @@ Elevator::Elevator(int idnum) {
     pthread_create(&elevator_thread, NULL, elevator_run, this);
 }
 
+Elevator::~Elevator() {
+    do_quit();
+    requests.erase(requests.begin(), requests.end());
+}
+
 void Elevator::do_quit() {
     quit = 1;
     pthread_cond_signal(&elevator_wait);
