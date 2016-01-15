@@ -6,12 +6,12 @@
 Elevator::Elevator(int idnum) {
     id = idnum;
     quit = 0;
-
     current_floor = 1;
     requested_floor = 1;
     next_floor = 1;
     direction_arrived = UP;
     elevator_state = INITIALIZING;
+    current_request = make_pair(-1, DOWN);
 
     pthread_cond_init(&elevator_wait, NULL);
     pthread_mutex_init(&elevator_mutex, NULL);
@@ -25,6 +25,7 @@ Elevator::~Elevator() {
 }
 
 void Elevator::do_quit() {
+    //cout << "quiit" << endl;
     quit = 1;
     pthread_cond_signal(&elevator_wait);
     pthread_join(elevator_thread, NULL);
@@ -58,13 +59,32 @@ void *Elevator::elevator_run(void *arg) {
 }
 
 void Elevator::process_request() {
-    next_floor = requested_floor;
-    if (requested_floor > current_floor)
+    if (requested_floor > current_floor) {
         direction_arrived = UP;
-    else
+        // a granular movement of 1 floor after
+        // which the elevator will re-evaluate
+        // all the requests
+        next_floor = current_floor + 1;
+    } else {
         direction_arrived = DOWN;
-
+        // a granular movement of 1 floor after
+        // which the elevator will re-evaluate
+        // all the requests
+        next_floor = current_floor - 1;
+    }
+    //
+    // This Just represents the transition of elevator
+    // from one floor to next
     current_floor = next_floor;
+    Log::eprintf("%s:%s On floor %d\n", __func__, __FILE__, 
+                    current_floor);
+    if (current_floor == current_request.first) {
+        // Current request is completed, invalidate it
+        current_request.first = -1;
+        Log::eprintf("%s:%s Done request for floor %d\n", __func__, __FILE__, 
+                      requested_floor);
+    }
+
 }
 
 bool Elevator::queue_next_request(int floor) {
@@ -113,15 +133,22 @@ bool Elevator::do_pending_request() {
 bool Elevator::schedule_next_request() {
 
     Log::eprintf("%s:%s Called... %lu\n", __func__, __FILE__, requests.size());
-    if (requests.size() == 0) {
+    if (requests.size() == 0 && current_request.first == -1) {
         Log::eprintf("%s:%s Queue is empty\n", __func__, __FILE__);
         return false;
     }
+
+    // We will have to re-evaluate the current request if it is valid.
+    // This is because a new request can come in even even the elevator
+    // is processing a current request
+    if (current_request.first != -1)
+        requests.push_back(current_request);
 
     if (requests.size() == 1) {
         queue_next_request(requests[0].first);
         Log::eprintf("%s:%s q size 1, next floor %d\n",
                __func__, __FILE__, requests[0].first);
+        current_request = requests[0];
         requests.erase(requests.begin());
         return true;
     }
@@ -162,6 +189,7 @@ bool Elevator::schedule_next_request() {
             queue_next_request(requests[same_d_min_index].first);
             Log::eprintf("%s:%s cond 1 q size %d, next floor %d\n",
                 __func__, __FILE__, size, requests[same_d_min_index].first);
+            current_request = requests[same_d_min_index];
             requests.erase(requests.begin() + same_d_min_index);
             return true;
         }
@@ -170,6 +198,7 @@ bool Elevator::schedule_next_request() {
             queue_next_request(requests[opp_d_max_index].first);
             Log::eprintf("%s:%s cond 2 q size %d, next floor %d\n",
                 __func__, __FILE__, size, requests[opp_d_max_index].first);
+            current_request = requests[opp_d_max_index];
             requests.erase(requests.begin() + opp_d_max_index);
             return true;
         }
@@ -178,6 +207,7 @@ bool Elevator::schedule_next_request() {
             queue_next_request(requests[opp_d_low_max_index].first);
             Log::eprintf("%s:%s cond 3 q size %d, next floor %d\n",
                 __func__, __FILE__, size, requests[opp_d_low_max_index].first);
+            current_request = requests[opp_d_low_max_index];
             requests.erase(requests.begin() + opp_d_low_max_index);
             return true;
         }
@@ -186,6 +216,7 @@ bool Elevator::schedule_next_request() {
             queue_next_request(requests[same_d_low_min_index].first);
             Log::eprintf("%s:%s cond 4 q size %d, next floor %d\n",
                 __func__, __FILE__, size, requests[same_d_low_min_index].first);
+            current_request = requests[same_d_low_min_index];
             requests.erase(requests.begin() + same_d_low_min_index);
             return true;
         }
@@ -224,6 +255,7 @@ bool Elevator::schedule_next_request() {
             queue_next_request(requests[same_d_max_index].first);
             Log::eprintf("%s:%s cond 5 q size %d, next floor %d\n",
                 __func__, __FILE__, size, requests[same_d_max_index].first);
+            current_request = requests[same_d_max_index];
             requests.erase(requests.begin() + same_d_max_index);
             return true;
         }
@@ -232,6 +264,7 @@ bool Elevator::schedule_next_request() {
             queue_next_request(requests[opp_d_min_index].first);
             Log::eprintf("%s:%s cond 6 q size %d, next floor %d\n",
                 __func__, __FILE__, size, requests[opp_d_min_index].first);
+            current_request = requests[opp_d_min_index];
             requests.erase(requests.begin() + opp_d_min_index);
             return true;
         }
@@ -240,6 +273,7 @@ bool Elevator::schedule_next_request() {
             queue_next_request(requests[opp_d_high_min_index].first);
             Log::eprintf("%s:%s cond 7 q size %d, next floor %d\n",
                 __func__, __FILE__, size, requests[opp_d_high_min_index].first);
+            current_request = requests[opp_d_high_min_index];
             requests.erase(requests.begin() + opp_d_high_min_index);
             return true;
         }
@@ -248,6 +282,7 @@ bool Elevator::schedule_next_request() {
             queue_next_request(requests[same_d_high_max_index].first);
             Log::eprintf("%s:%s cond 8 q size %d, next floor %d\n",
                 __func__, __FILE__, size, requests[same_d_high_max_index].first);
+            current_request = requests[same_d_high_max_index];
             requests.erase(requests.begin() + same_d_high_max_index);
             return true;
         }

@@ -36,12 +36,11 @@ private:
 
     int current_floor;
     displacement direction_arrived;
+    pair<int, displacement> current_request;
 
     int requested_floor;
     int next_floor;
     vector< pair<int, displacement> > requests;
-
-    ofstream logf;
 
     static void *elevator_run(void *arg);
     void process_request();
