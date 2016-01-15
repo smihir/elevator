@@ -26,7 +26,7 @@ void run(vector<Elevator *>& e) {
             continue;
         }
 
-        Log::eprintf("Up(1) or Down(0): \n");
+        Log::eprintf("\nUp(1) or Down(0): \n");
         cin >> dir;
         if (dir != 0 && dir != 1) {
             Log::eprintf("\ninvalid direction\n");
@@ -62,15 +62,12 @@ int main(int argc, char **argv) {
             displacement d;
             while (getline(tfile, line)) {
                 istringstream iss(line);
-                iss >> id;
                 iss >> floor;
                 iss >> dir;
                 d = (dir == 0) ? DOWN : UP;
                 if (id >= MAX_ELEVATORS) {
                     continue;
                 }
-                //cout << "id: " << id << " floor: " << floor << " dir: " << dir << endl;
-                //elevators[id]->queue_pending_request(floor, d);
                 schedule_job(elevators, floor, d);
             }
             for (int i = 0; i < MAX_ELEVATORS; i++)
